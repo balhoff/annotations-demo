@@ -47,13 +47,15 @@ object Main extends App {
   val Dummy = Class("http://example.org/dummy")
   def createAnnotations(data: Model): Set[OWLAxiom] = {
     val qe = QueryExecutionFactory.create(phenotypeAssociationQuery, data)
-    (for {
+    val annotations = (for {
       result <- qe.execSelect().asScala
     } yield {
       val gene = Individual(result.getResource("gene").getURI)
       val phenotype = Class(result.getResource("phenotype").getURI)
       gene Type (Dummy and phenotype)
-    }).toSet
+    }).toSet[OWLAxiom]
+    qe.close()
+    annotations
   }
   val zfinAnnotations = createAnnotations(zfinData)
   val mgiAnnotations = createAnnotations(mgiData)
