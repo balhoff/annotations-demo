@@ -6,7 +6,7 @@ import org.apache.jena.query.QueryExecutionFactory
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.riot.RDFDataMgr
-import org.apache.jena.system.JenaSystem
+import org.apache.jena.sys.JenaSystem
 import org.phenoscape.scowl._
 import org.semanticweb.elk.owlapi.ElkReasonerFactory
 import org.semanticweb.owlapi.apibinding.OWLManager
@@ -34,6 +34,9 @@ object Main extends App {
   val HasPhenotype = ObjectProperty("http://purl.obolibrary.org/obo/RO_0002200")
   val HasPart = ObjectProperty("http://purl.obolibrary.org/obo/BFO_0000051")
   val InheresIn = ObjectProperty("http://purl.obolibrary.org/obo/RO_0000052")
+  val Towards = ObjectProperty("http://purl.obolibrary.org/obo/RO_0002503")
+  val PhenotypeOf = ObjectProperty("http://example.org/phenotype_of")
+  val propertyAxioms = Set(InheresIn SubPropertyOf PhenotypeOf, Towards SubPropertyOf PhenotypeOf)
   val phenotypeAssociationQuery = QueryFactory.create(s"""
     PREFIX oban: <http://purl.org/oban/> 
     SELECT DISTINCT ?gene ?phenotype
@@ -64,7 +67,7 @@ object Main extends App {
     term <- uberon.getClassesInSignature(Imports.EXCLUDED).asScala
   } yield {
     val dummyTerm = termToDummy(term)
-    (dummyTerm -> term, dummyTerm EquivalentTo (Dummy and (HasPart some (InheresIn some term))))
+    (dummyTerm -> term, dummyTerm EquivalentTo (Dummy and (HasPart some (PhenotypeOf some term))))
   }).unzip
   val dummiesToTerms = mapping.toMap
   def filterDisjointAxioms(axioms: Set[OWLAxiom]): Set[OWLAxiom] = axioms
@@ -73,8 +76,8 @@ object Main extends App {
       case axiom: OWLEquivalentClassesAxiom => axiom.getNamedClasses.contains(factory.getOWLNothing) || axiom.getClassExpressions.contains(factory.getOWLNothing)
       case _                                => false
     }
-  val fishAxioms = filterDisjointAxioms(uberon.getAxioms().asScala.toSet ++ zfa.getAxioms().asScala.toSet ++ zfaUberonBridge.getAxioms().asScala.toSet ++ zp.getAxioms().asScala.toSet ++ zfinAnnotations ++ phenotypeAxioms)
-  val mouseAxioms = filterDisjointAxioms(uberon.getAxioms().asScala.toSet ++ mp.getAxioms().asScala.toSet ++ mgiAnnotations ++ phenotypeAxioms)
+  val fishAxioms = filterDisjointAxioms(uberon.getAxioms().asScala.toSet ++ zfa.getAxioms().asScala.toSet ++ zfaUberonBridge.getAxioms().asScala.toSet ++ zp.getAxioms().asScala.toSet ++ zfinAnnotations ++ phenotypeAxioms ++ propertyAxioms)
+  val mouseAxioms = filterDisjointAxioms(uberon.getAxioms().asScala.toSet ++ mp.getAxioms().asScala.toSet ++ mgiAnnotations ++ phenotypeAxioms ++ propertyAxioms)
   val fishOnt = manager.createOntology(fishAxioms.asJava)
   val mouseOnt = manager.createOntology(mouseAxioms.asJava)
   def liftAnnotations(ont: OWLOntology): Set[(OWLNamedIndividual, OWLClass)] = {
