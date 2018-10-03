@@ -25,9 +25,9 @@ object Main extends App {
   val manager = OWLManager.createOWLOntologyManager()
   val factory = manager.getOWLDataFactory
   val uberon = manager.loadOntology(IRI.create("http://purl.obolibrary.org/obo/uberon/ext.owl"))
-  val zfa = manager.loadOntology(IRI.create("http://purl.obolibrary.org/obo/zfa.owl"))
+  val zfa = manager.loadOntology(IRI.create("http://purl.obolibrary.org/obo/upheno/imports/zfa_import.owl"))
   val zfaUberonBridge = manager.loadOntology(IRI.create("http://purl.obolibrary.org/obo/uberon/bridge/uberon-bridge-to-zfa.owl"))
-  val zp = manager.loadOntology(IRI.create("http://compbio.charite.de/jenkins/job/zp-owl/lastSuccessfulBuild/artifact/zp.owl"))
+  val zp = manager.loadOntology(IRI.create("http://purl.obolibrary.org/obo/upheno/zp.owl"))
   val mp = manager.loadOntology(IRI.create("http://purl.obolibrary.org/obo/mp.owl"))
   val zfinData = RDFDataMgr.loadModel("https://data.monarchinitiative.org/ttl/zfin_slim.ttl")
   val mgiData = RDFDataMgr.loadModel("https://data.monarchinitiative.org/ttl/mgi_slim.ttl")
